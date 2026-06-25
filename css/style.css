@@ -990,3 +990,69 @@ body {
   20%  { opacity: 1; }
   100% { opacity: 0; transform: translate(var(--dx, 0), -85vh) scale(1); }
 }
+/* =============================================================
+ * 分享功能（V2）样式
+ *   - .toast 屏幕级浮层
+ *   - #btn-share.is-loading loading 态
+ * ============================================================= */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 12vh;
+  transform: translate(-50%, 20px);
+  min-width: 180px;
+  max-width: 80vw;
+  padding: 12px 20px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-align: center;
+  color: #fff;
+  background: rgba(20, 12, 48, 0.78);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.toast.toast-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.toast.toast-success {
+  background: linear-gradient(135deg, rgba(123, 97, 255, 0.92), rgba(157, 78, 221, 0.92));
+  border-color: rgba(255, 255, 255, 0.22);
+}
+.toast.toast-error {
+  background: linear-gradient(135deg, rgba(255, 90, 95, 0.92), rgba(199, 56, 78, 0.92));
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+#btn-share.is-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+  opacity: 0.85;
+}
+#btn-share.is-loading::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: shareSpin 0.8s linear infinite;
+}
+@keyframes shareSpin {
+  to { transform: rotate(360deg); }
+}
