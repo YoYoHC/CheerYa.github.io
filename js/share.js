@@ -13,7 +13,7 @@
   'use strict';
 
   var SHARE_TITLE = '测一测你的抗衰人格';
-  var SHARE_DESC  = '20道题，测出你的逆龄潜力，看看你属于哪一种抗衰人格。';
+  var SHARE_DESC  = '5 分钟，测出你的抗衰潜力，看看你属于哪一种抗衰人格。';
 
   /** 取首页 URL（保留部署子路径，去掉 query/hash） */
   function getHomeUrl() {
@@ -42,32 +42,77 @@
     }, 1800);
   }
 
-  /** 复制到剪贴板（兼容方案） */
+  /** 复制到剪贴板（兼容方案）
+   *  优先级：textarea + execCommand('copy')
+   *  - 不依赖页面焦点、用户激活、secure context
+   *  - 兼容性最强（iOS Safari < 13.4、Android 旧 webview、iframe 失焦场景都能用）
+   *  - 仅在 execCommand 失败时才尝试 navigator.clipboard（可能在部分环境受 NotAllowedError 阻断）
+   */
   function copyToClipboard(text) {
-    // 优先用现代 API
-    if (navigator.clipboard && window.isSecureContext) {
-      return navigator.clipboard.writeText(text).then(function () {
-        return true;
-      }).catch(function () {
-        return fallbackCopy(text);
-      });
+    // 1) 首选：老派 textarea + execCommand（最稳）
+    var ok = fallbackCopy(text);
+    if (ok) return Promise.resolve(true);
+
+    // 2) 降级：现代 Clipboard API（可能被 NotAllowedError 阻断）
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text)
+        .then(function () { return true; })
+        .catch(function (err) {
+          // 吞掉 NotAllowedError / SecurityError / DOMException，UI 层只关心成功/失败
+          if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) {
+            return false;
+          }
+          return false;
+        });
     }
-    return Promise.resolve(fallbackCopy(text));
+
+    return Promise.resolve(false);
   }
 
-  /** 老浏览器 fallback */
+  /** 老浏览器 fallback —— textarea + execCommand('copy')
+   *  不需要页面焦点、用户激活或 secure context
+   */
   function fallbackCopy(text) {
     try {
       var ta = document.createElement('textarea');
       ta.value = text;
+      // 让 iOS Safari 选中内容
       ta.setAttribute('readonly', '');
       ta.style.position = 'fixed';
+      ta.style.top = '0';
+      ta.style.left = '0';
+      ta.style.width = '1px';
+      ta.style.height = '1px';
+      ta.style.padding = '0';
+      ta.style.border = 'none';
+      ta.style.outline = 'none';
+      ta.style.boxShadow = 'none';
+      ta.style.background = 'transparent';
       ta.style.opacity = '0';
       document.body.appendChild(ta);
-      ta.select();
+
+      // iOS 需要先 contentEditable + 临时改 readOnly
+      var prevContentEditable = ta.contentEditable;
+      var prevReadOnly = ta.readOnly;
+      ta.contentEditable = 'true';
+      ta.readOnly = false;
+
+      var range = document.createRange();
+      range.selectNodeContents(ta);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      ta.setSelectionRange(0, text.length);
+
       var ok = document.execCommand('copy');
+
+      // 还原
+      ta.contentEditable = prevContentEditable;
+      ta.readOnly = prevReadOnly;
+      sel.removeAllRanges();
+
       document.body.removeChild(ta);
-      return ok;
+      return !!ok;
     } catch (e) {
       return false;
     }
