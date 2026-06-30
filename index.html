@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0420" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>抗衰状态测评 · 细胞级抗衰</title>
+  <link rel="stylesheet" href="./styles.css?v=24" />
+  <script>
+    /* 主题自动检测：跟随系统亮/暗模式，实时响应变化
+       - dark / no-preference → 暗色（默认）
+       - light → 亮色 */
+    (function(){
+      function applyTheme(){
+        var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var light = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        if (light) document.documentElement.setAttribute('data-theme', 'light');
+        else document.documentElement.setAttribute('data-theme', 'dark');
+        // 同步更新 status bar / 地址栏颜色
+        var bg = light ? '#f5f3ff' : '#0b0420';
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', bg);
+      }
+      applyTheme();
+      // 监听系统主题变化
+      try {
+        var mq = window.matchMedia('(prefers-color-scheme: light)');
+        if (mq.addEventListener) mq.addEventListener('change', applyTheme);
+        else if (mq.addListener) mq.addListener(applyTheme);
+      } catch(e){}
+    })();
+  </script>
+</head>
+<body>
+  <div class="phone">
+    <div id="stage">
+      <!-- ============== 启动页 ============== -->
+      <section id="page-home">
+        <div class="hero">
+          <div class="logo">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3c4 4 14 4 18 0M3 21c4-4 14-4 18 0M7 6.5c2 1.5 8 1.5 10 0M7 17.5c2-1.5 8-1.5 10 0M7 6.5v11M17 6.5v11M12 3v18"/>
+            </svg>
+          </div>
+          <div>
+            <div class="title-md">细胞级抗衰自测</div>
+            <div class="subtle">5 大维度 · 20 道精准问题</div>
+          </div>
+        </div>
+
+        <div class="card" style="text-align:center;padding:36px 20px">
+          <div class="title-md" style="font-size:20px">读懂身体的真实年龄</div>
+          <div class="subtle" style="margin:10px 0 18px">通过五大维度评估，生成专属的细胞级抗衰方案</div>
+          <ul style="text-align:left;list-style:none;padding:0;margin:18px 0">
+            <li class="dim-pill">能量 · 线粒体供能水平</li>
+            <li class="dim-pill">氧化 · 自由基与糖化反应</li>
+            <li class="dim-pill">炎症 · 慢性炎性内耗</li>
+            <li class="dim-pill">脑力 · 神经与睡眠节律</li>
+            <li class="dim-pill">执行 · 健康行动与吸收</li>
+          </ul>
+          <button class="btn" id="btn-start">开始测评 →</button>
+        </div>
+      </section>
+
+      <!-- ============== 答题 / 信息收集（同一屏） ============== -->
+      <section id="page-session" class="hidden">
+        <div class="step-meta">
+          <span class="muted">抗衰状态测评</span>
+          <span id="s-progress-text">1 / 25</span>
+        </div>
+        <div class="progress"><div id="s-progress-bar" style="width:4%"></div></div>
+
+        <div class="card" id="s-card"></div>
+
+        <div class="row" style="margin-top:18px">
+          <button class="btn btn-ghost hidden" id="btn-prev">← 返回上一题</button>
+        </div>
+      </section>
+
+      <!-- ============== 加载页 ============== -->
+      <section id="page-loading" class="hidden">
+        <div class="loader">
+          <div class="title-md" style="margin-bottom:6px">正在生成您的专属报告</div>
+          <div class="subtle" style="margin-bottom:18px">AI 深度分析 5 大维度 · 构建您的抗衰画像</div>
+
+          <!-- 进度环形 + 中心百分比 -->
+          <div class="analyze-ring">
+            <svg viewBox="0 0 120 120">
+              <defs>
+                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#a855f7"/>
+                  <stop offset="100%" stop-color="#ec4899"/>
+                </linearGradient>
+              </defs>
+              <circle class="ring-bg" cx="60" cy="60" r="52"/>
+              <circle class="ring-fg" cx="60" cy="60" r="52" id="ring-fg"/>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-pct" id="ring-pct">0%</div>
+              <div class="ring-label" id="ring-label">初始化</div>
+            </div>
+          </div>
+
+          <!-- 5 个维度分析阶段 -->
+          <div class="analyze-steps" id="analyze-steps">
+            <div class="a-step" data-dim="energy">
+              <span class="a-icon"></span>
+              <span class="a-name">能量维度</span>
+              <span class="a-status">等待中</span>
+            </div>
+            <div class="a-step" data-dim="oxy">
+              <span class="a-icon"></span>
+              <span class="a-name">氧化维度</span>
+              <span class="a-status">等待中</span>
+            </div>
+            <div class="a-step" data-dim="inflam">
+              <span class="a-icon"></span>
+              <span class="a-name">慢性炎症维度</span>
+              <span class="a-status">等待中</span>
+            </div>
+            <div class="a-step" data-dim="brain">
+              <span class="a-icon"></span>
+              <span class="a-name">脑力维度</span>
+              <span class="a-status">等待中</span>
+            </div>
+            <div class="a-step" data-dim="act">
+              <span class="a-icon"></span>
+              <span class="a-name">执行维度</span>
+              <span class="a-status">等待中</span>
+            </div>
+          </div>
+
+          <!-- 数据流文字 -->
+          <div class="data-stream" id="data-stream"></div>
+        </div>
+      </section>
+
+      <!-- ============== 结果页 ============== -->
+      <section id="page-result" class="hidden">
+        <div class="hero">
+          <div class="logo">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="9" y1="13" x2="15" y2="13"/>
+              <line x1="9" y1="17" x2="13" y2="17"/>
+            </svg>
+          </div>
+          <div>
+            <div class="title-md">您的专属抗衰报告</div>
+            <div class="subtle">细胞级抗衰方案</div>
+          </div>
+        </div>
+
+        <div class="score-card">
+          <div class="muted">综合抗衰指数</div>
+          <div class="score-big" id="r-total">0</div>
+          <div class="score-label" id="r-total-label">—</div>
+        </div>
+
+        <div class="bmi-alert hidden" id="r-bmi-alert">
+          <div id="r-bmi-text"></div>
+        </div>
+
+        <div class="card">
+          <div class="title-md">抗衰状态雷达图</div>
+          <div class="subtle" style="margin-bottom:6px">直观展现您当前的身体防线状态</div>
+          <div class="radar-wrap" id="r-radar"></div>
+          <div id="r-dim-list"></div>
+        </div>
+
+        <div id="r-insight"></div>
+
+        <div class="result-actions">
+          <button class="btn btn-ghost" id="btn-restart">重新测评</button>
+          <button class="btn btn-share" id="btn-share">好友分享</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- 产品详情弹窗：全屏图片查看器 -->
+  <div class="imgviewer" id="imgviewer" hidden>
+    <button class="imgviewer-close" type="button" aria-label="关闭">×</button>
+    <div class="imgviewer-stage" id="imgviewer-stage"></div>
+    <div class="imgviewer-counter" id="imgviewer-counter"></div>
+    <div class="imgviewer-nav">
+      <button class="imgviewer-prev" type="button" aria-label="上一张">‹</button>
+      <button class="imgviewer-next" type="button" aria-label="下一张">›</button>
+    </div>
+  </div>
+
+  <script src="./data.js?v=24"></script>
+  <script src="./app.js?v=24"></script>
+</body>
+</html>
