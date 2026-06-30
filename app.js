@@ -417,7 +417,7 @@ function renderInsight(r){
   const head = weak.slice(0, SHOW_N);
   const tail = weak.slice(SHOW_N);
 
-  let body = `<div class="subtle" style="margin-bottom:10px">检测到您有 <b style="color:var(--purple-3)">${weak.length}</b> 个严重不足的维度，按严重程度依次展开：</div>`;
+  let body = `<div class="subtle" style="margin-bottom:10px">检测到您有 <b style="color:var(--purple-3)">${weak.length}</b> 个不足的维度，按严重程度依次展开：</div>`;
 
   // 头部：默认显示
   body += `<div class="low-head-list">`;
@@ -830,7 +830,7 @@ document.getElementById("btn-restart").addEventListener("click", () => {
    （一行即可，例如 https://example.com/your-landing）
    未提供 .txt 时使用默认
    ========================================================= */
-const SHARE_URL_FALLBACK = "https://example.com/anti-aging-report";
+const SHARE_URL_FALLBACK = "https://yoyohc.github.io/CheerYa.github.io/";
 let _shareUrlCache = null;
 
 async function loadShareUrl(){
