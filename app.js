@@ -376,8 +376,8 @@ function renderInsight(r){
   wrap.innerHTML = "";
   const dims = Object.keys(DIM_META).map(k => ({ k, score: r[k].normalized }));
   // 阈值统一为 70：< 70 视为需要重点关注（薄弱），>= 70 视为合格（不再细分轻度）
-  const weak = dims.filter(d => d.score < 85).sort((a,b)=>a.score-b.score);
-  const allGood = dims.every(d => d.score >= 85);
+  const weak = dims.filter(d => d.score < 80).sort((a,b)=>a.score-b.score);
+  const allGood = dims.every(d => d.score >= 80);
 
   if (allGood) {
     wrap.innerHTML = `
