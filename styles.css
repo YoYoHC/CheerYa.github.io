@@ -583,6 +583,73 @@ body::before{
 }
 .low-block .product-btn{margin-top:14px}
 
+/* ===== 三明治干预建议：日常习惯 → 基础营养 → 前沿靶向 ===== */
+.sandwich-stack{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.low-sandwich{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:11px 12px;border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.025);
+}
+/* 三个三明治中“前沿靶向干预”块需要卡片在屏幕中轴对称：
+   隐藏左侧独立 icon，改为在标题前加 sparkle，块变 column，块本身的左右 padding 对称 */
+.low-sandwich.layer-frontier{
+  flex-direction:column;
+  align-items:stretch;
+  gap:6px;
+  /* 上下小，左右一致，让下方轮播/卡片在屏幕中轴上对称 */
+  padding:11px 10px 13px;
+}
+.low-sandwich.layer-frontier .layer-icon{display:none}
+.low-sandwich.layer-frontier .layer-label::before{
+  content:"✨";margin-right:6px;font-size:13px;display:inline-block;
+}
+.low-sandwich .layer-icon{
+  flex:0 0 auto;width:28px;height:28px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;line-height:1;
+  background:rgba(168,85,247,.12);
+  border:1px solid rgba(168,85,247,.22);
+}
+.low-sandwich .layer-body{flex:1 1 auto;min-width:0}
+.low-sandwich .layer-label{
+  font-size:12px;font-weight:600;color:var(--text);
+  margin-bottom:4px;letter-spacing:.2px;
+}
+.low-sandwich p{
+  font-size:12.5px !important;line-height:1.7 !important;color:var(--text-dim);
+  margin:0 !important;
+}
+.low-sandwich .layer-sub{
+  font-size:11.5px !important;color:var(--text-dim);
+  opacity:.85;margin:0 0 8px !important;
+}
+/* 层次颜色（从浅到深，渐进式专业感） */
+.low-sandwich.layer-life{
+  background:rgba(74,222,128,.06);
+  border-color:rgba(74,222,128,.22);
+}
+.low-sandwich.layer-life .layer-icon{
+  background:rgba(74,222,128,.14);
+  border-color:rgba(74,222,128,.30);
+}
+.low-sandwich.layer-basic{
+  background:rgba(96,165,250,.06);
+  border-color:rgba(96,165,250,.22);
+}
+.low-sandwich.layer-basic .layer-icon{
+  background:rgba(96,165,250,.14);
+  border-color:rgba(96,165,250,.30);
+}
+.low-sandwich.layer-frontier{
+  background:rgba(168,85,247,.08);
+  border-color:rgba(168,85,247,.26);
+}
+.low-sandwich.layer-frontier .layer-icon{
+  background:rgba(168,85,247,.16);
+  border-color:rgba(168,85,247,.34);
+}
+
 /* 产品图占位 */
 .ph{
   position:relative;
@@ -636,10 +703,14 @@ body::before{
 
 /* 轮播通用：一次只显示一个，可左右滑动（同时用于营养素轮播） */
 .ncarousel, .pcarousel{
-  position:relative;margin-top:10px;
-  border-radius:16px;overflow:hidden;
-  background:var(--surface-3);
-  border:1px solid var(--surface-4);
+  position:relative;
+  /* 轮播本身收缩为内容（卡片）宽度，再 margin:auto 水平居中，
+     使 AKG 卡片在 .layer-body 中轴上对称 */
+  width:fit-content;
+  max-width:100%;
+  margin:6px auto 0;
+  border-radius:0;overflow:hidden;
+  background:transparent;border:none;
   touch-action:pan-y;
   user-select:none;-webkit-user-select:none;
 }
@@ -650,21 +721,27 @@ body::before{
 }
 .ncarousel .slide, .pcarousel .slide{
   flex:0 0 100%;min-width:100%;
-  padding:14px 16px 16px;
+  padding:0 4px;
   box-sizing:border-box;
+  display:flex;
 }
 .ncarousel .pnav, .pcarousel .pnav{
-  position:absolute;top:50%;width:32px;height:32px;border-radius:50%;
+  position:absolute;top:50%;width:28px;height:28px;border-radius:50%;
   background:var(--nav-btn);border:1px solid var(--nav-btn-border);
   color:var(--nav-btn-color);display:flex;align-items:center;justify-content:center;
   cursor:pointer;transform:translateY(-50%);
   backdrop-filter:blur(8px);
   transition:background .15s,opacity .15s;
-  z-index:2;font-size:14px;
+  z-index:2;font-size:13px;
+  /* 按钮落在轮播边缘外侧（指向卡片边缘），不压在卡片内容上 */
+  background:rgba(255,255,255,0.92);
+  color:#7c3aed;
+  box-shadow:0 2px 8px -2px rgba(124,58,237,0.4);
 }
-.ncarousel .pnav:active, .pcarousel .pnav:active{background:rgba(168,85,247,0.45)}
-.ncarousel .pnav.prev, .pcarousel .pnav.prev{left:6px}
-.ncarousel .pnav.next, .pcarousel .pnav.next{right:6px}
+.ncarousel .pnav:active, .pcarousel .pnav:active{background:rgba(255,255,255,1)}
+/* 按钮紧贴卡片边缘以外 4px；轮播 .layer-frontier 下本身靠左右 padding 10px，这里再外推一点 */
+.ncarousel .pnav.prev, .pcarousel .pnav.prev{left:-8px}
+.ncarousel .pnav.next, .pcarousel .pnav.next{right:-8px}
 .ncarousel .pnav[disabled], .pcarousel .pnav[disabled]{opacity:.25;pointer-events:none}
 .ncarousel .dots, .pcarousel .dots{
   display:flex;justify-content:center;gap:6px;padding:0 0 10px;
@@ -681,20 +758,58 @@ body::before{
 
 .nutrient-card{
   background:var(--surface-3);border:1px solid var(--surface-4);
-  border-radius:14px;padding:14px;
+  border-radius:18px;padding:16px 16px 14px;
+  /* 让卡片在 slide 内占满，但 slide 本身在 .ncarousel 居中
+     （.ncarousel 已是 block，自动宽度 = 100%），
+     这里额外加 max-width 限制，避免被 .pnav 按钮处超界 */
+  width:100%;
+  box-sizing:border-box;
 }
-.nutrient-card .pn{font-size:14px;font-weight:700;margin-bottom:4px}
-.nutrient-card .pd{font-size:12px;color:var(--text-dim);line-height:1.6;margin-bottom:8px}
+.nutrient-card .ph{
+  /* 营养素大色块，不再显示图片：高度更紧凑，给下方文字更多空间 */
+  aspect-ratio:2.6/1;
+  border-radius:14px;
+  margin-bottom:14px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,
+    rgba(168,85,247,0.35) 0%,
+    rgba(236,72,153,0.28) 55%,
+    rgba(124,58,237,0.32) 100%);
+  border:1px solid rgba(168,85,247,0.25);
+  position:relative;overflow:hidden;
+}
+.nutrient-card .ph::before{
+  /* 微弱光晕 */
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), transparent 55%);
+  pointer-events:none;
+}
+.nutrient-card .ph .ph-fallback{
+  position:relative;z-index:1;display:flex;align-items:center;justify-content:center;
+  font-size:32px;font-weight:700;letter-spacing:0.5px;
+  color:#fff;
+  text-shadow:0 2px 12px rgba(124,58,237,0.45);
+}
+.nutrient-card .pn{font-size:14px;font-weight:600;margin:0 0 5px;letter-spacing:0.2px}
+.nutrient-card .pd{font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:8px}
 .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .tag-row .t{font-size:10.5px;padding:3px 8px;border-radius:99px;background:var(--tag-bg);color:var(--tag-color);border:1px solid var(--tag-border)}
 .product-btn{
-  width:100%;padding:11px 14px;font-size:12.5px;border-radius:12px;
-  color:#fff;
-  background:linear-gradient(90deg,var(--purple-1),var(--purple-2));
-  border:none;font-weight:600;cursor:pointer;
-  box-shadow:0 8px 20px -8px var(--purple-2);
+  width:100%;padding:9px 14px;font-size:12px;border-radius:10px;
+  color:var(--text-dim);
+  background:transparent;
+  border:1px solid var(--border);
+  font-weight:500;cursor:pointer;
   letter-spacing:0;
+  transition:all .2s;
+  margin-top:10px;
 }
+.product-btn:hover{
+  color:var(--text);
+  border-color:rgba(168,85,247,.45);
+  background:rgba(168,85,247,.06);
+}
+.product-btn::after{content:" ›";opacity:.6;font-weight:400}
 
   /* 全屏图片查看器：点击小图放大全屏显示原图，无蒙版文字 */
   .imgviewer{

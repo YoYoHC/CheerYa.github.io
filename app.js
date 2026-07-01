@@ -376,8 +376,8 @@ function renderInsight(r){
   wrap.innerHTML = "";
   const dims = Object.keys(DIM_META).map(k => ({ k, score: r[k].normalized }));
   // 阈值统一为 70：< 70 视为需要重点关注（薄弱），>= 70 视为合格（不再细分轻度）
-  const weak = dims.filter(d => d.score < 80).sort((a,b)=>a.score-b.score);
-  const allGood = dims.every(d => d.score >= 80);
+  const weak = dims.filter(d => d.score < 85).sort((a,b)=>a.score-b.score);
+  const allGood = dims.every(d => d.score >= 85);
 
   if (allGood) {
     wrap.innerHTML = `
@@ -417,7 +417,7 @@ function renderInsight(r){
   const head = weak.slice(0, SHOW_N);
   const tail = weak.slice(SHOW_N);
 
-  let body = `<div class="subtle" style="margin-bottom:10px">检测到您有 <b style="color:var(--purple-3)">${weak.length}</b> 个不足的维度，按严重程度依次展开：</div>`;
+  let body = `<div class="subtle" style="margin-bottom:10px">检测到您有 <b style="color:var(--purple-3)">${weak.length}</b> 个不足的维度，按分数高低依次展开：</div>`;
 
   // 头部：默认显示
   body += `<div class="low-head-list">`;
@@ -441,6 +441,33 @@ function renderInsight(r){
 function renderLowInsight(dim, score){
   const d = LOW_INSIGHT[dim];
   const nutrients = getNutrients(dim);
+  // 三明治结构：日常习惯调整（基础）→ 基础营养支持（常规）→ 前沿靶向干预（产品原料）
+  const lifestyleHtml = d.lifestyle ? `
+    <div class="low-sandwich layer-life">
+      <div class="layer-icon">🌿</div>
+      <div class="layer-body">
+        <div class="layer-label">日常习惯调整（基础）</div>
+        <p>${d.lifestyle}</p>
+      </div>
+    </div>` : "";
+  const basicHtml = d.basic ? `
+    <div class="low-sandwich layer-basic">
+      <div class="layer-icon">🧬</div>
+      <div class="layer-body">
+        <div class="layer-label">基础营养支持（常规）</div>
+        <p>${d.basic}</p>
+      </div>
+    </div>` : "";
+  const frontierHtml = (nutrients && nutrients.length) ? `
+    <div class="low-sandwich layer-frontier">
+      <div class="layer-icon">✨</div>
+      <div class="layer-body">
+        <div class="layer-label">前沿靶向干预</div>
+        <p class="layer-sub">针对该维度深层机制的细胞级营养素，可左右滑动查看。</p>
+        ${nutrientCarouselHtml(nutrients)}
+        ${productButtonHtml(dim, "查看产品详情")}
+      </div>
+    </div>` : "";
   return `
     <div class="low-block" data-dim="${dim}">
       <div class="low-head">
@@ -460,11 +487,13 @@ function renderLowInsight(dim, score){
         <div class="risk">${d.risk}</div>
       </div>
       <div class="low-section">
-        <div class="low-label">营养补充建议</div>
-        <p class="subtle">以下是针对该维度推荐的关键营养素，左右滑动查看更多。</p>
-        ${nutrientCarouselHtml(nutrients)}
+        <div class="low-label">干预建议</div>
+        <div class="sandwich-stack">
+          ${lifestyleHtml}
+          ${basicHtml}
+          ${frontierHtml}
+        </div>
       </div>
-      ${productButtonHtml(dim, "查看产品详情")}
     </div>
   `;
 }
@@ -479,22 +508,25 @@ function productButtonHtml(dim, label){
    营养素 = 产品原料，轮播展示多张营养素卡片
    ========================================================= */
 function nutrientImgHtml(n){
-  // 真实图片 src：优先用 data.js 里 n.img 字段（如 n_energy_akg.png），
-  // 兜底用 n.id（兼容老数据）
-  const src = NUTRIENT_IMG_DIR + (n.img || (n.id + ".png"));
-  // 占位文字：中文取名字本身（≤2字），英文取首字母
+  // 不再展示产品图，直接以渐变背景 + 名称缩写作为占位
   const name = (n.name || "").trim();
-  let ph;
-  if (/^[\u4e00-\u9fa5]/.test(name)) {
-    ph = name.length <= 2 ? name : name.substring(0, 2);
-  } else {
-    ph = (name.charAt(0) || "?").toUpperCase();
-  }
-  return `<div class="ph">
-    <img src="${src}" alt="${escapeHtml(name)}"
-         onerror="this.style.display=\'none\';var f=this.nextElementSibling;if(f)f.style.display=\'flex\'" />
-    <div class="ph-fallback" style="display:none"><span>${escapeHtml(ph)}</span></div>
-  </div>`;
+  // 优先级：
+  //  1) 开头连续大写字母（AKG / PQQ）
+  //  2) 括号内连续大写字母（葡萄籽提取物（OPC））
+  //  3) 字符串中任一连续大写字母（2 字母以上）
+  //  4) 第一个英文字母
+  //  5) 中文前 4 字
+  let ph = "";
+  let m = name.match(/^[A-Z]+/);
+  if (m) ph = m[0];
+  if (!ph) m = name.match(/[（(]([A-Z]{2,})[）)]/);
+  if (!ph && m) ph = m[1];
+  if (!ph) m = name.match(/[A-Z]{2,}/);
+  if (!ph && m) ph = m[0];
+  if (!ph) m = name.match(/[A-Za-z]/);
+  if (!ph && m) ph = m[0].toUpperCase();
+  if (!ph) ph = name.length <= 4 ? name : name.substring(0, 4);
+  return `<div class="ph ph-name"><span class="ph-fallback">${escapeHtml(ph)}</span></div>`;
 }
 
 function nutrientCardHtml(n){
@@ -783,21 +815,26 @@ function drawRadar(r){
     fill="url(#radarGrad)" style="stroke:var(--radar-stroke)" stroke-width="2" />`;
   const dataDots = dataPts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="4" style="fill:var(--radar-dot-fill);stroke:var(--radar-dot-stroke)" stroke-width="2" />`).join("");
 
-  // 标签（不放 emoji，避免撑出 viewBox；按角度调 padding，左右位置错开）
+  // 标签：推到更外侧（1.32），左右按角度设 text-anchor；顶部维度（i=0）下移避开数字
   const labelPts = order.map((_, i) => {
     const a = angleOf(i);
-    const [x, y] = point(i, 1.20);
-    // 根据水平位置微调 text-anchor：右侧用 start，左侧用 end，中部用 middle
+    const [x, y] = point(i, 1.32);
     const cosA = Math.cos(a);
     const anchor = cosA > 0.3 ? "start" : (cosA < -0.3 ? "end" : "middle");
-    const dx = cosA > 0.3 ? 6 : (cosA < -0.3 ? -6 : 0);
-    return `<text x="${x + dx}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle"
+    const dx = cosA > 0.3 ? 4 : (cosA < -0.3 ? -4 : 0);
+    // 顶部 i=0 时 y 已经较靠上，再下移 14px 避开数据点上的数值
+    const dy = (i === 0) ? 14 : 0;
+    // 底部 i=2（脑力维度）和 i=3（慢性炎症维度）y 偏下，标签也下移避免贴边
+    const dyBot = (i === 2 || i === 3) ? 2 : 0;
+    return `<text x="${x + dx}" y="${y + dy + dyBot}" text-anchor="${anchor}" dominant-baseline="middle"
       font-size="13" style="fill:var(--radar-label)" font-weight="500">${labels[i].name}</text>`;
   }).join("");
 
-  // 数值小字
+  // 数值小字：固定在数据点内上方 12px，并加半透白底圆角底，避免和网格/标签撞
   const valPts = dataPts.map((p, i) =>
-    `<text x="${p[0]}" y="${p[1]-10}" text-anchor="middle" font-size="11" style="fill:var(--radar-value)" font-weight="700">${values[i]}</text>`
+    `<g><rect x="${p[0]-15}" y="${p[1]-22}" width="30" height="14" rx="3" ry="3"
+      style="fill:rgba(255,255,255,0.85)" />
+     <text x="${p[0]}" y="${p[1]-12}" text-anchor="middle" font-size="10" style="fill:#7c3aed" font-weight="700">${values[i]}</text></g>`
   ).join("");
 
   wrap.innerHTML = `
@@ -830,7 +867,7 @@ document.getElementById("btn-restart").addEventListener("click", () => {
    （一行即可，例如 https://example.com/your-landing）
    未提供 .txt 时使用默认
    ========================================================= */
-const SHARE_URL_FALLBACK = "https://yoyohc.github.io/CheerYa.github.io/";
+const SHARE_URL_FALLBACK = "https://example.com/anti-aging-report";
 let _shareUrlCache = null;
 
 async function loadShareUrl(){
